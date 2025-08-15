@@ -1,0 +1,1480 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-webhook",
+        "options": {}
+      },
+      "id": "5ec7b77f-0517-4124-ab3f-69556135a1cc",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -780,
+        1820
+      ],
+      "webhookId": "lead-capture-webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3fbe0dcb-a575-4323-a0d9-1f7d1debbde9",
+              "name": "company",
+              "value": "={{ $json.body[0]['company       '] }}",
+              "type": "string"
+            },
+            {
+              "id": "27d8e4f2-5498-4d9e-944f-8a0884abd4bb",
+              "name": "company_size",
+              "value": "={{ $json.body[0]['company_size  '] }}",
+              "type": "string"
+            },
+            {
+              "id": "df86ac0f-f370-42eb-9c38-0172f8a2b479",
+              "name": "email",
+              "value": "={{ $json.body[0].email }}",
+              "type": "string"
+            },
+            {
+              "id": "9fe0fac4-3276-4e81-a3f6-8a27b476a625",
+              "name": "industry",
+              "value": "={{ $json.body[0]['industry      '] }}",
+              "type": "string"
+            },
+            {
+              "id": "7c5e84ac-ef37-498c-88db-367ea7e07221",
+              "name": "job_title",
+              "value": "={{ $json.body[0].job_title }}",
+              "type": "string"
+            },
+            {
+              "id": "83792d03-a1af-404c-8bb7-66accf4e91f1",
+              "name": "name",
+              "value": "={{ $json.body[0]['name          '] }}",
+              "type": "string"
+            },
+            {
+              "id": "2408e9d7-ece9-4902-9a67-75013ba036db",
+              "name": "notes",
+              "value": "={{ $json.body[0]['notes         '] }}",
+              "type": "string"
+            },
+            {
+              "id": "ca54e818-3972-4bb7-b74a-152a34f950cc",
+              "name": "phone",
+              "value": "={{ $json.body[0]['phone         '] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -420,
+        1880
+      ],
+      "id": "e7994ea3-f4a3-4390-afae-63d97a06ac39",
+      "name": "Preserve Original Fields"
+    },
+    {
+      "parameters": {
+        "url": "https://api.hunter.io/v2/domain-search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "domain",
+              "value": "={{ $('Webhook Trigger').item.json.body[0].email.split('@')[1] }}"
+            },
+            {
+              "name": "limit",
+              "value": "10"
+            },
+            {
+              "name": "type",
+              "value": "personal"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "80706584-1a47-4d95-80ac-d9b974204900",
+      "name": "Hunter.io Domain Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        460,
+        1700
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0956SGANV6",
+          "mode": "list",
+          "cachedResultName": "invalidleads"
+        },
+        "text": "=❌ **Invalid Email Detected** ❌\n**Name:** {{ $('Webhook Trigger').item.json.body[0]['name          '] }}\n**Company:** {{ $('Webhook Trigger').item.json.body[0]['company       '] }}\n**Email:** {{ $('Webhook Trigger').item.json.body[0].email }}\n**Industry:** {{ $('Webhook Trigger').item.json.body[0]['industry      '] }}\n**Job Title:** {{ $('Webhook Trigger').item.json.body[0].job_title }}\n**Company Size:** {{ $('Webhook Trigger').item.json.body[0]['company_size  '] }}\n**Phone:** {{ $('Webhook Trigger').item.json.body[0]['phone         '] }}\n**Notes:** {{ $('Webhook Trigger').item.json.body[0]['notes         '] }}\n\nInvalid lead has been logged to Google Sheets for review.",
+        "otherOptions": {}
+      },
+      "id": "05867fe0-a7e3-4ef0-86de-a0e349830f74",
+      "name": "Invalid Leads → Slack Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [
+        700,
+        2000
+      ],
+      "webhookId": "931cd5e7-5cdd-4ddf-9d76-a473f5c80a47"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0",
+          "mode": "list",
+          "cachedResultName": "Lead Management Dashboard",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1774243248,
+          "mode": "list",
+          "cachedResultName": "Invalid Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0/edit#gid=1774243248"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Company": "={{ $json.company }}",
+            "Job Title": "={{ $json.job_title }}",
+            "Phone": "={{ $json.phone }}",
+            "Company Size": "={{ $json.company_size }}",
+            "Industry": "={{ $json.industry }}",
+            "Notes": "={{ $json.notes }}",
+            "Email Status": "=invalid",
+            "Name": "={{ $json.name }}",
+            "Email": "={{ $json.email }}",
+            "Timestamp": "={{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job Title",
+              "displayName": "Job Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Size",
+              "displayName": "Company Size",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Status",
+              "displayName": "Email Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Score",
+              "displayName": "Lead Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Enriched Data",
+              "displayName": "Enriched Data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Assignment",
+              "displayName": "Assignment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Follow-up Status",
+              "displayName": "Follow-up Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Deal Value Estimate",
+              "displayName": "Deal Value Estimate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "ea459ad4-c622-4804-aef9-0c51f0926c3a",
+      "name": "Invalid Leads → Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        460,
+        2000
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C094LML0F8C",
+          "mode": "list",
+          "cachedResultName": "warmleads"
+        },
+        "text": "=⚡ **Warm Lead Received** ⚡\n**{{ $('Webhook Trigger').item.json.body[0]['name          '] }}** from **{{ $('Webhook Trigger').item.json.body[0]['company       '] }}**\n\n📧 Email: {{ $('Webhook Trigger').item.json.body[0].email }} ✅\n💼 Title: {{ $('Webhook Trigger').item.json.body[0].job_title }}\n📊 Lead Score: {{ $('WarmLeads → Google Sheets').item.json.Score }}/100\n🌡️ Temperature: {{ $('WarmLeads → Google Sheets').item.json.Temperature }}\n🎯 Est. Deal Value: ${{ $('WarmLeads → Google Sheets').item.json['Estimated Deal Value'] }}\n\n📧 **Action**: {{ $('WarmLeads → Google Sheets').item.json['Action Required'] }}\n⏰ **Follow-up**: Within 24 hours\n📅 **Date Added**: {{ $('WarmLeads → Google Sheets').item.json.Date }}",
+        "otherOptions": {}
+      },
+      "id": "13222d96-653f-40dd-8d91-04818cd82a66",
+      "name": "Warm Leads → Slack Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [
+        1780,
+        1700
+      ],
+      "webhookId": "d980ade0-dc2c-4898-b1c7-7eac9ef6d3f4"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C094JHKC8NN",
+          "mode": "list",
+          "cachedResultName": "hotleads"
+        },
+        "text": "=🔥 **HOT LEAD ALERT!** 🔥\n**{{ $('Webhook Trigger').first().json.body[0].name }}** from **{{ $json.Company }}**\n\n📧 Email: {{ $json.Email }} ✅ VERIFIED\n💼 Title: {{ $('Webhook Trigger').first().json.body[0].job_title }}\n🏢 Company Size: {{ $('Lead Routing').item.json.headcount_category }} employees\n📊 Lead Score: **{{ $('Lead Routing').item.json.lead_score }}/150**\n🌡️ Temperature: {{ $('Lead Routing').item.json.temperature }}\n🎯 Est. Deal Value: **${{ $('Hot Leads → Google Sheets').item.json['Estimated Deal Value'] }}**\n\n🚨 **ACTION REQUIRED: {{ $('Hot Leads → Google Sheets').item.json['Action Required'] }}** 🚨\n\n_This {{ $('Lead Routing').item.json.company_tier }} company lead has high conversion potential - don't let them slip away!_\n\n📅 **Date:** {{ $('Hot Leads → Google Sheets').item.json.Date }}\n🏆 **Priority:** {{ $('Lead Routing').item.json.priority }}",
+        "otherOptions": {}
+      },
+      "id": "71a36f3f-fd58-44af-85d5-fb444d5e4482",
+      "name": "Hot Leads → Slack Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [
+        1780,
+        1480
+      ],
+      "webhookId": "859befb4-5a8c-42ea-9eb3-b1cd224f0123"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0",
+          "mode": "list",
+          "cachedResultName": "Lead Management Dashboard",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1735478958,
+          "mode": "list",
+          "cachedResultName": "Analytics",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0/edit#gid=1735478958"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Score": "={{ $json.lead_score }}",
+            "Temperature": "={{ $json.temperature }}",
+            "Action Required": "={{ $json.action_required }}",
+            "Estimated Deal Value": "=${{ $json.estimated_deal_value }}",
+            "Date": "{{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Temperature",
+              "displayName": "Temperature",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Action Required",
+              "displayName": "Action Required",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Estimated Deal Value",
+              "displayName": "Estimated Deal Value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "3954dac1-7aac-47be-9970-d288d6cb6963",
+      "name": "Cold Leads → Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1280,
+        1920
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0",
+          "mode": "list",
+          "cachedResultName": "Lead Management Dashboard",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1735478958,
+          "mode": "list",
+          "cachedResultName": "Analytics",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0/edit#gid=1735478958"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now }}",
+            "Estimated Deal Value": "=${{ $json.estimated_deal_value }}",
+            "Action Required": "={{ $json.action_required }}",
+            "Temperature": "={{ $json.temperature }}",
+            "Score": "={{ $json.lead_score }}",
+            "Company": "=",
+            "Email": "="
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Temperature",
+              "displayName": "Temperature",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Action Required",
+              "displayName": "Action Required",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estimated Deal Value",
+              "displayName": "Estimated Deal Value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "d1f3c0d6-ad29-4dc0-86a2-474d37f8efd9",
+      "name": "Hot Leads → Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1280,
+        1480
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 3,
+        "output": "={{ $json.lead_score >= 70 ? 0 : ($json.lead_score >= 40 ? 1 : 2) }}"
+      },
+      "id": "91dc2b4d-36b0-4901-9ef0-e8e1aeb47e06",
+      "name": "Lead Routing",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        920,
+        1700
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lead Scoring Algorithm - Using Correct Data Paths\nlet score = 0;\n\nconsole.log('=== LEAD SCORING WITH CORRECT DATA PATHS ===');\n\n// Extract data using the exact paths provided\nconst email = $('Email Valid?').first().json.data.email;\nconst emailDomain = $input.first().json.data.domain;\nconst industry = $input.first().json.data.industry;\nconst headcount = $input.first().json.data.headcount;\nconst country = $input.first().json.data.country;\nconst organization = $input.first().json.data.organization;\nconst emailValidationStatus = $('Email Valid?').first().json.data.status; // validation status\nconst jobTitle = $('Webhook Trigger').first().json.body[0].job_title;\n\nconsole.log('Extracted Data:', {\n  email,\n  emailDomain,\n  industry,\n  headcount,\n  country,\n  organization,\n  emailValidationStatus,\n  jobTitle\n});\n\n// Company classification\nconst majorTechCompanies = ['microsoft', 'google', 'apple', 'amazon', 'meta', 'salesforce', 'adobe', 'oracle', 'ibm', 'intel', 'nvidia'];\nconst companyName = (organization || '').toLowerCase();\nconst isMajorTechCompany = majorTechCompanies.some(company => companyName.includes(company));\nconst isFortuneCompany = isMajorTechCompany;\n\nconsole.log('Company Analysis:', {\n  companyName,\n  isMajorTechCompany,\n  isFortuneCompany\n});\n\nconsole.log('\\n=== SCORING BREAKDOWN ===');\n\n// 1. EMAIL VALIDATION (30 points)\nif (emailValidationStatus === 'valid') {\n  score += 30;\n  console.log('✅ +30 points: Email validation confirmed as valid');\n} else if (isFortuneCompany && emailDomain) {\n  score += 25;\n  console.log('✅ +25 points: Fortune company email (validation override)');\n} else if (emailDomain && !['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'].includes(emailDomain)) {\n  score += 20;\n  console.log('✅ +20 points: Corporate email domain');\n}\n\n// 2. COMPANY SIZE & PRESTIGE (35 points)\nif (isFortuneCompany) {\n  score += 35;\n  console.log(`✅ +35 points: Fortune-level company (${organization})`);\n} else if (headcount && (headcount.includes('10000+') || headcount.includes('5001-10000'))) {\n  score += 30;\n  console.log('✅ +30 points: Very large company (5000+ employees)');\n} else if (headcount && headcount.includes('1001-5000')) {\n  score += 25;\n  console.log('✅ +25 points: Large company (1001-5000)');\n} else if (headcount && headcount.includes('501-1000')) {\n  score += 20;\n  console.log('✅ +20 points: Medium company (501-1000)');\n} else if (headcount && headcount.includes('201-500')) {\n  score += 15;\n  console.log('✅ +15 points: Small-medium company (201-500)');\n} else if (headcount && headcount.includes('51-200')) {\n  score += 10;\n  console.log('✅ +10 points: Small company (51-200)');\n} else if (headcount) {\n  score += 5;\n  console.log('✅ +5 points: Company size data available');\n}\n\n// 3. JOB TITLE & SENIORITY (35 points)\nconst jobTitleLower = (jobTitle || '').toLowerCase();\nconsole.log('Analyzing job title:', jobTitleLower);\n\nif (jobTitleLower.includes('ceo') || jobTitleLower.includes('chief executive') || \n    jobTitleLower.includes('founder') || jobTitleLower.includes('president')) {\n  score += 35;\n  console.log('✅ +35 points: C-level/President/Founder title');\n} else if (jobTitleLower.includes('cto') || jobTitleLower.includes('cfo') || \n           jobTitleLower.includes('coo') || jobTitleLower.includes('chief')) {\n  score += 30;\n  console.log('✅ +30 points: C-suite title');\n} else if (jobTitleLower.includes('vp') || jobTitleLower.includes('vice president') || \n           jobTitleLower.includes('svp')) {\n  score += 25;\n  console.log('✅ +25 points: VP title');\n} else if (jobTitleLower.includes('director') || jobTitleLower.includes('head of')) {\n  score += 20;\n  console.log('✅ +20 points: Director title');\n} else if (jobTitleLower.includes('manager') || jobTitleLower.includes('lead')) {\n  score += 15;\n  console.log('✅ +15 points: Management title');\n} else if (jobTitleLower.includes('senior') || jobTitleLower.includes('principal')) {\n  score += 10;\n  console.log('✅ +10 points: Senior title');\n} else if (jobTitle) {\n  score += 5;\n  console.log('✅ +5 points: Job title provided');\n}\n\n// 4. INDUSTRY RELEVANCE (25 points)\nconst industryLower = (industry || '').toLowerCase();\nif (isMajorTechCompany || industryLower.includes('technology') || \n    industryLower.includes('software') || industryLower.includes('development') || \n    industryLower.includes('saas')) {\n  score += 25;\n  console.log('✅ +25 points: Technology/Software industry');\n} else if (industryLower.includes('finance') || industryLower.includes('fintech') || \n           industryLower.includes('banking')) {\n  score += 20;\n  console.log('✅ +20 points: Finance industry');\n} else if (industryLower.includes('healthcare') || industryLower.includes('medical')) {\n  score += 15;\n  console.log('✅ +15 points: Healthcare industry');\n} else if (industryLower.includes('consulting') || industryLower.includes('professional services')) {\n  score += 12;\n  console.log('✅ +12 points: Consulting industry');\n} else if (industry) {\n  score += 5;\n  console.log('✅ +5 points: Industry data available');\n}\n\n// 5. GEOGRAPHIC QUALITY (5 points)\nif (country === 'US') {\n  score += 5;\n  console.log('✅ +5 points: US-based company');\n}\n\n// 6. JACKPOT BONUS (20 points)\nif (isFortuneCompany && (jobTitleLower.includes('ceo') || jobTitleLower.includes('founder') || \n    jobTitleLower.includes('president'))) {\n  score += 20;\n  console.log('🚀 +20 points: JACKPOT BONUS - C-level at Fortune company!');\n} else if (isFortuneCompany && (jobTitleLower.includes('vp') || jobTitleLower.includes('director'))) {\n  score += 15;\n  console.log('🚀 +15 points: Executive at Fortune company');\n}\n\n// Calculate deal value\nlet dealValueMultiplier = 1000;\nif (isFortuneCompany) {\n  dealValueMultiplier = 4000;\n} else if (headcount && (headcount.includes('5001') || headcount.includes('10000+'))) {\n  dealValueMultiplier = 2500;\n} else if (headcount && headcount.includes('1001-5000')) {\n  dealValueMultiplier = 1800;\n}\n\nconst estimatedDealValue = Math.round(score * dealValueMultiplier);\n\n// Determine lead temperature\nlet temperature = 'Cold';\nlet priority = 'Low';\nlet actionRequired = 'Add to newsletter';\n\nif (score >= 120) {\n  temperature = 'Hot';\n  priority = 'Urgent';\n  actionRequired = 'Call immediately - high value prospect';\n} else if (score >= 80) {\n  temperature = 'Warm';\n  priority = 'High';\n  actionRequired = 'Add to nurture sequence - follow up within 24 hours';\n} else if (score >= 50) {\n  temperature = 'Cool';\n  priority = 'Medium';\n  actionRequired = 'Add to long-term nurture sequence';\n} else {\n  temperature = 'Cold';\n  priority = 'Low';\n  actionRequired = 'Add to newsletter - quarterly follow-up';\n}\n\nconsole.log('\\n=== FINAL RESULTS ===');\nconsole.log('Total Score:', score);\nconsole.log('Temperature:', temperature);\nconsole.log('Priority:', priority);\nconsole.log('Deal Value:', estimatedDealValue);\nconsole.log('Deal Multiplier:', dealValueMultiplier);\n\n// Return enriched data\nreturn [{\n  json: {\n    // Original contact data\n    email: email,\n    job_title: jobTitle,\n    company: organization,\n    industry: industry,\n    \n    // Company data\n    company_data: {\n      domain: emailDomain,\n      organization: organization,\n      industry: industry,\n      headcount: headcount,\n      country: country\n    },\n    \n    // Scoring results\n    lead_score: score,\n    temperature: temperature,\n    priority: priority,\n    action_required: actionRequired,\n    estimated_deal_value: estimatedDealValue,\n    scoring_timestamp: new Date().toISOString(),\n    email_domain: emailDomain,\n    headcount_category: headcount,\n    industry_category: industry,\n    company_tier: isFortuneCompany ? 'Fortune' : 'Standard',\n    is_major_tech_company: isMajorTechCompany,\n    deal_value_multiplier: dealValueMultiplier\n  }\n}];"
+      },
+      "id": "b4fa8e59-1a4d-42f8-824a-6e1b3eb5e0bf",
+      "name": "Lead Scoring Algorithm",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        1700
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "email-valid-condition",
+              "leftValue": "={{ $json.data.status }}",
+              "rightValue": "valid",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "80d79d07-8a74-4140-a68b-ba285d857225",
+      "name": "Email Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        200,
+        1840
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.hunter.io/v2/email-verifier",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "={{ $json.body[0].email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3cfe08e6-8fdb-4c75-8b59-dcefa510f83f",
+      "name": "Email Validation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -420,
+        1700
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -220,
+        1840
+      ],
+      "id": "dd348572-d9dc-4040-8535-7162609a4cca",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": []
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        1840
+      ],
+      "id": "490ef456-665c-4f51-9a10-9b74d71e0973",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0",
+          "mode": "list",
+          "cachedResultName": "Lead Management Dashboard",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1735478958,
+          "mode": "list",
+          "cachedResultName": "Analytics",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0/edit#gid=1735478958"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now }}",
+            "Score": "={{ $json.lead_score }}",
+            "Temperature": "={{ $json.temperature }}",
+            "Action Required": "={{ $json.action_required }}",
+            "Estimated Deal Value": "=${{ $json.estimated_deal_value }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Temperature",
+              "displayName": "Temperature",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Action Required",
+              "displayName": "Action Required",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estimated Deal Value",
+              "displayName": "Estimated Deal Value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1280,
+        1700
+      ],
+      "id": "e019b55e-8a5e-48f1-9189-aaf5a7e012ca",
+      "name": "WarmLeads → Google Sheets"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09527B34JV",
+          "mode": "list",
+          "cachedResultName": "coldleads"
+        },
+        "text": "=❄️ **Cold Lead Logged** ❄️\n**{{ $('Webhook Trigger').item.json.body[0]['name          '] }}** from **{{ $('Webhook Trigger').item.json.body[0]['company       '] }}**\n\n📧 Email: {{ $('Webhook Trigger').item.json.body[0].email }} \n💼 Title: {{ $('Webhook Trigger').item.json.body[0].job_title }}\n📊 Lead Score: {{ $('Cold Leads → Google Sheets').item.json.Score }}/100\n🌡️ Temperature: {{ $('Cold Leads → Google Sheets').item.json.Temperature }}\n🎯 Est. Deal Value: ${{ $('Cold Leads → Google Sheets').item.json['Estimated Deal Value'] }}\n\n📧 **Action**: {{ $('Cold Leads → Google Sheets').item.json['Action Required'] }}\n⏰ **Follow-up**: Long-term nurture sequence\n📅 **Date Added**: {{ $('Cold Leads → Google Sheets').item.json.Date }}\n\n*Lead needs further qualification before active outreach*",
+        "otherOptions": {}
+      },
+      "id": "0d10b1a6-cc29-421f-aa08-d488d358c80a",
+      "name": "Cold Leads → Slack Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [
+        1780,
+        1920
+      ],
+      "webhookId": "d980ade0-dc2c-4898-b1c7-7eac9ef6d3f4"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0",
+          "mode": "list",
+          "cachedResultName": "Lead Management Dashboard",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1735478958,
+          "mode": "list",
+          "cachedResultName": "Analytics",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0/edit#gid=1735478958"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Score": "={{ $json.Score }}",
+            "Email": "={{ $('Webhook Trigger').item.json.body[0].email }}",
+            "Company": "={{ $('Webhook Trigger').item.json.body[0]['company       '] }}"
+          },
+          "matchingColumns": [
+            "Score"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Temperature",
+              "displayName": "Temperature",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Action Required",
+              "displayName": "Action Required",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estimated Deal Value",
+              "displayName": "Estimated Deal Value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1520,
+        1480
+      ],
+      "id": "41619bfe-e9ba-4ef4-82e3-719e931c8c2e",
+      "name": "Hot Finalization"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0",
+          "mode": "list",
+          "cachedResultName": "Lead Management Dashboard",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1735478958,
+          "mode": "list",
+          "cachedResultName": "Analytics",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0/edit#gid=1735478958"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Score": "={{ $json.Score }}",
+            "Email": "={{ $('Webhook Trigger').item.json.body[0].email }}",
+            "Company": "={{ $('Webhook Trigger').item.json.body[0]['company       '] }}"
+          },
+          "matchingColumns": [
+            "Score"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Temperature",
+              "displayName": "Temperature",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Action Required",
+              "displayName": "Action Required",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estimated Deal Value",
+              "displayName": "Estimated Deal Value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1520,
+        1700
+      ],
+      "id": "bed0f4fa-8aa2-4159-ba49-1350c225b8f5",
+      "name": "Warm Finalization"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0",
+          "mode": "list",
+          "cachedResultName": "Lead Management Dashboard",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1735478958,
+          "mode": "list",
+          "cachedResultName": "Analytics",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f5sAYhl68VKuxx4q8T0-qyoYfoDpubMZnck2mcfRnL0/edit#gid=1735478958"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Score": "={{ $json.Score }}",
+            "Email": "={{ $('Webhook Trigger').item.json.body[0].email }}",
+            "Company": "={{ $('Webhook Trigger').item.json.body[0]['company       '] }}"
+          },
+          "matchingColumns": [
+            "Score"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Temperature",
+              "displayName": "Temperature",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Action Required",
+              "displayName": "Action Required",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estimated Deal Value",
+              "displayName": "Estimated Deal Value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1520,
+        1920
+      ],
+      "id": "50f7b7c6-4a84-4895-81e9-af16e703f713",
+      "name": "Cold Finalization"
+    },
+    {
+      "parameters": {
+        "content": "## Webhook Trigger\nCould be google form, Zapier, JSON bundle, however you plan on enriching your lead.",
+        "height": 420,
+        "width": 200,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -820,
+        1560
+      ],
+      "id": "411265b8-caae-463e-ae75-12f89cd5f651",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Email Validation\nValidates your leads email.\nHunter io API Key to set up.\nVisit: https://hunter.io/api-keys",
+        "height": 580,
+        "width": 180
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        1460
+      ],
+      "id": "f80954d9-8e7e-4607-81f5-2a3e1c599fe9",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Validation Check\nIf valid → Enrichment/Scoring\nIf invalid → append to google sheet, alert via Slack Channel",
+        "height": 360,
+        "width": 190,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        160,
+        1640
+      ],
+      "id": "e3f92771-f42c-4966-9d8b-f169735bd74a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Enrichment + Scoring\nHunter io domain search for enrichment → Custom scoring algo → Routing",
+        "height": 300,
+        "width": 640,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        1580
+      ],
+      "id": "04693209-4235-466e-9287-74f3866e40e1",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Notification \nAppend to Google Sheets, Air Table, or any CRM. → Alert/notify via Slack alert.",
+        "height": 840,
+        "width": 780,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1220,
+        1320
+      ],
+      "id": "ed990c97-57b9-4956-81b2-25544aa71367",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "# Lead Enrichment & Notification Automation - Setup Guide \n## Overview\nThis n8n workflow automatically enriches incoming leads, scores them based on company data and job titles, and routes them to appropriate Google Sheets while sending Slack notifications. It's designed to showcase advanced lead qualification and CRM automation capabilities.\n### Workflow Summary\nInput: Lead data via webhook (name, email, company, job title, etc.)\nProcess: Email validation → Company enrichment → Lead scoring → Routing\nOutput: Categorized leads in Google Sheets + Slack notifications\n\n### Required Services & Setup\nHunter.io API Setup\nPurpose: Email validation and company enrichment\nSteps:\n\nGo to https://hunter.io/api-keys\nCreate a free account (50 requests/month) or upgrade for more\nGenerate a new API key\nIn n8n: Go to Credentials → Add Credential → HTTP Query Auth\n\nName: Hunter.io API\nQuery Parameter Name: api_key\nQuery Parameter Value: [YOUR_API_KEY]\n\n\n\n2. Google Sheets Setup\nPurpose: Lead storage and CRM functionality\nSteps:\n\nCreate a Google Sheet named \"Lead Management Dashboard\"\nCreate these sheets/tabs:\n\nAnalytics (main data)\nInvalid Leads\n\n\nSet up columns in Analytics sheet:\nDate | Email | Company | Score | Temperature | Action Required | Estimated Deal Value\n\nIn n8n: Go to Credentials → Add Credential → Google Sheets OAuth2 API\n\nFollow OAuth flow to connect your Google account\nGrant necessary permissions\n\n\n\n3. Slack Integration Setup\nPurpose: Real-time lead notifications\nSteps:\n\nGo to https://api.slack.com/apps\nCreate a new Slack app for your workspace\nAdd these OAuth scopes:\n\nchat:write\nchannels:read\n\n\nInstall app to workspace and copy the Bot User OAuth Token\nCreate these Slack channels:\n\n#hotleads\n#warmleads\n#coldleads\n#invalidleads\n\n\nIn n8n: Go to Credentials → Add Credential → Slack OAuth2 API\n\nPaste your Bot User OAuth Token",
+        "height": 540,
+        "width": 1040
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6b0a96a6-e5a0-49f1-a579-2feea10542ab",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "### Google Sheets Setup\nPurpose: Lead storage and CRM functionality\nSteps:\n\nCreate a Google Sheet named \"Lead Management Dashboard\"\nCreate these sheets/tabs:\n\nAnalytics (main data)\nInvalid Leads\n\n\nSet up columns in Analytics sheet:\nDate | Email | Company | Score | Temperature | Action Required | Estimated Deal Value\n\nIn n8n: Go to Credentials → Add Credential → Google Sheets OAuth2 API\n\nFollow OAuth flow to connect your Google account\nGrant necessary permissions\n\n\n\n### Slack Integration Setup\nPurpose: Real-time lead notifications\nSteps:\n\nGo to https://api.slack.com/apps\nCreate a new Slack app for your workspace\nAdd these OAuth scopes:\n\nchat:write\nchannels:read\n\n\nInstall app to workspace and copy the Bot User OAuth Token\nCreate these Slack channels:\n\n#hotleads\n#warmleads\n#coldleads\n#invalidleads\n\n\nIn n8n: Go to Credentials → Add Credential → Slack OAuth2 API\n\nPaste your Bot User OAuth Token",
+        "height": 860,
+        "width": 1040
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        560
+      ],
+      "id": "c42a23d3-6846-4fb0-85bf-36dc1b12244d",
+      "name": "Sticky Note6"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Preserve Original Fields",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invalid Leads → Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Invalid Leads → Slack Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hunter.io Domain Search": {
+      "main": [
+        [
+          {
+            "node": "Lead Scoring Algorithm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hot Leads → Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Hot Finalization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Routing": {
+      "main": [
+        [
+          {
+            "node": "Hot Leads → Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WarmLeads → Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Cold Leads → Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Scoring Algorithm": {
+      "main": [
+        [
+          {
+            "node": "Lead Routing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Valid?": {
+      "main": [
+        [
+          {
+            "node": "Hunter.io Domain Search",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Invalid Leads → Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Validation": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preserve Original Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Email Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WarmLeads → Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Warm Finalization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cold Leads → Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Cold Finalization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hot Finalization": {
+      "main": [
+        [
+          {
+            "node": "Hot Leads → Slack Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Warm Finalization": {
+      "main": [
+        [
+          {
+            "node": "Warm Leads → Slack Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cold Finalization": {
+      "main": [
+        [
+          {
+            "node": "Cold Leads → Slack Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "503ab32b-2722-4249-a4cb-8f1f9a83e379",
+  "meta": {
+    "instanceId": "29ae7285a262ba62d4557dcacd392c44b4ef740546fe132176971bfefef789f0"
+  },
+  "id": "9yUuwprKK5PHVsW0",
+  "tags": []
+}
